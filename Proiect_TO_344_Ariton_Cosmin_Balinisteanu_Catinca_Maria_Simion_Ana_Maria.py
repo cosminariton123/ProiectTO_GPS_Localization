@@ -93,4 +93,4 @@ if __name__ == '__main__':
     assert len(a) >= len(x) + 1, "Consecinta directa a faptului ca a1...an nu se afla intr-un spatiu dimensional afin mai mic nu este satisfacuta"
 
     print(fixed_point_GPS_LS(x, a, d))
-    print(fixed_point_CF_LS(x, a, d))g
+    print(fixed_point_CF_LS(x, a, d))
