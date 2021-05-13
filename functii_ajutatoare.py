@@ -132,4 +132,3 @@ def generare_b(a, d):
 
     return b
 
-#def generare_y(a, d):
