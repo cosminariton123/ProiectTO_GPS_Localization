@@ -55,11 +55,12 @@ def exemplul_5_3():
 
 
     plt.plot(x_gasit_optim[0], x_gasit_optim[1],'bo',  label = 'Centrul cercului gasit prin CF_LS' ,markersize = 3)
+    plt.plot(x_true[0], x_true[1], 'mo', label = 'Centrul real al cercului', markersize = 5)
 
     draw_circle = plt.Circle((x_gasit_optim[0], x_gasit_optim[1]), np.mean([np.linalg.norm(x_gasit_optim - ai) for ai in a]) ,fill=False, lw = 3)
     axes.add_artist(draw_circle)
 
-    plt.title('Circle fitting LS')
+    plt.title('Circle fitting LS\n ' + 'distanta fata de punctul de optim :' + str( np.linalg.norm( fixed_point_CF_LS(x, a, d, pasi_acuratete)- x_true)))
 
     plt.legend()
     plt.show()
