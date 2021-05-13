@@ -1,8 +1,4 @@
 from functii_ajutatoare import *
-import numpy as np
-import matplotlib.pyplot as plt
-import random
-
 
 
 def CF_LS_step(xk, ai, di):
