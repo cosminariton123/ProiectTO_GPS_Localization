@@ -44,11 +44,27 @@ def generare_di(x, ai):
 
     while verificare_vector_di(di) == False or r < 0:
         
-        r = norm(0, 10)
+        r = norm(0, 20)
         di = [np.linalg.norm(x-a) - r + norm(0, 1) for a in ai]
         di = np.array(di)
 
     return di
+
+def generare_di_ce_reurneaza_si_r(x, ai):
+
+    r = norm(0, 10)
+
+    di = [np.linalg.norm(x-a) - r + norm(0, 1) for a in ai]
+    di = np.array(di)
+
+    while verificare_vector_di(di) == False or r < 0:
+        
+        r = norm(0, 10)
+        di = [np.linalg.norm(x-a) - r + norm(0, 1) for a in ai]
+        di = np.array(di)
+
+    return di, r
+
 
 def r(x, ai, di):
     m = len(ai)
@@ -84,8 +100,36 @@ def T(x, ai, di):
 
 def verificare_asumption_matrice(a):
     for elem in a:
-        for elem2 in (np.transpose(elem) * 2 - 1):
+        for elem2 in (np.transpose(elem) * 2 ):
             if elem2 == 0 :
                 return False
     
     return True
+
+
+
+
+def generare_B(a, d):
+    m = len(a)
+    B = list()
+
+    for i in range(m):
+        aux = [2* np.transpose(a[i]) , -1 , 2* d[i]]
+        B.append(aux)
+    
+    B= np.array(B)
+
+    return B
+
+
+def generare_b(a, d):
+    
+    m = len(a)
+    b = list()
+
+    b = [np.linalg.norm(ai)**2 - di**2 for ai, di in zip(a,d)]
+    b = np.array(b)
+
+    return b
+
+#def generare_y(a, d):
