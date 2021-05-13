@@ -121,6 +121,20 @@ def fixed_point_GPS_LS_histograma_erorilor(x, a,  pasi_acuratete, x_true):
     plt.title("Histograma erorilor GPS_LS")
 
 
+def fixed_point_GPS_LS_histograma_erorilor_influentat_de_x_initial(x, a,d,  pasi_acuratete, x_true, INTERVAL_STANGA, INTERVAL_DREAPTA, n):
+    generari = 10**3
+    B = list()
+
+    for i in range(generari):
+        B.append(np.linalg.norm(fixed_point_GPS_LS(x, a, d, pasi_acuratete) - x_true))
+        x = np.array([random.random() * (INTERVAL_DREAPTA - INTERVAL_STANGA) + INTERVAL_STANGA for i in range(n)])
+
+
+    
+    plt.hist(B, bins = 13, ec='black', color='magenta')
+    plt.title("Histograma erorilor GPS_LS in functie de x-ul initial")
+
+
 
 def CF_LS_step(xk, ai, di):
     m = len(ai)
@@ -158,7 +172,9 @@ def verificare_asumption_matrice(a):
     return True
 
 
-def exemplul_5_2(nr_figura):
+def exemplul_5_2():
+
+    nr_figura = 0
 
     x = np.array([-10, 5])
     a = np.array([[-29, -18], [7, -24], [-19, -27], [10, -27], [-9, 3], [-33, -34]])
@@ -242,10 +258,95 @@ def exemplul_5_3():
     plt.show()
 
 
-if __name__ == '__main__':
+
+def fixed_point_GPS_LS_random():
+    nr_figura = 0
+
+    NR_MAXIM_DIMENSIUNI = 10
+    NR_MAXIM_SATELITI = 20
+    INTERVAL_STANGA = -10
+    INTERVAL_DREAPTA = 10
+
+    n = random.randint(2, NR_MAXIM_DIMENSIUNI)
+
+    nr_sateliti = 0
+
+    while nr_sateliti < n+1:
+        nr_sateliti = random.randint(0,NR_MAXIM_SATELITI)
+
+    x = np.array([random.random() * (INTERVAL_DREAPTA - INTERVAL_STANGA) + INTERVAL_STANGA for i in range(n)])
+
+    a = list()
+    for elem in range(nr_sateliti):
+        a.append(np.array([random.random() * (INTERVAL_DREAPTA - INTERVAL_STANGA) + INTERVAL_STANGA for i in range(n)]))
+    
+    a= np.array(a)
+
+    x_true = np.array([random.random() * (INTERVAL_DREAPTA - INTERVAL_STANGA) + INTERVAL_STANGA for i in range(n)])
+    pasi_acuratete = 10**2
+    d = generare_di(x_true, a)
+
+
+    plt.figure(nr_figura)
+    fixed_point_GPS_LS_histograma_erorilor(x, a, pasi_acuratete, x_true)
+    nr_figura +=1
+    plt.figure(nr_figura)
+    fixed_point_GPS_LS_afisare_convergenta(x, a, d, pasi_acuratete, x_true)
+
+    print("################REZULTATE PENTRU SPATIU SI SATELITI GENERATI RANDOM#############")
+    print("Nr sateliti: " + str(nr_sateliti))
+    print("Spatiul n = " + str(n))
+    
+    plt.legend()
+    plt.show()
+
+
+
+def fixed_point_GPS_LS_random_influenta_punctului_de_start():
 
     nr_figura = 0
 
-    exemplul_5_2(nr_figura)
+    NR_MAXIM_DIMENSIUNI = 10
+    NR_MAXIM_SATELITI = 20
+    INTERVAL_STANGA = -10
+    INTERVAL_DREAPTA = 10
 
+    n = random.randint(2, NR_MAXIM_DIMENSIUNI)
+
+    nr_sateliti = 0
+
+    while nr_sateliti < n+1:
+        nr_sateliti = random.randint(0,NR_MAXIM_SATELITI)
+
+    x = np.array([random.random() * (INTERVAL_DREAPTA - INTERVAL_STANGA) + INTERVAL_STANGA for i in range(n)])
+
+    a = list()
+    for elem in range(nr_sateliti):
+        a.append(np.array([random.random() * (INTERVAL_DREAPTA - INTERVAL_STANGA) + INTERVAL_STANGA for i in range(n)]))
+    
+    a= np.array(a)
+
+    x_true = np.array([random.random() * (INTERVAL_DREAPTA - INTERVAL_STANGA) + INTERVAL_STANGA for i in range(n)])
+    pasi_acuratete = 10**2
+    d = generare_di(x_true, a)
+
+
+    plt.figure(nr_figura)
+    fixed_point_GPS_LS_histograma_erorilor_influentat_de_x_initial(x, a, d, pasi_acuratete, x_true, INTERVAL_STANGA, INTERVAL_DREAPTA, n)
+
+    print("################REZULTATE PENTRU SPATIU SI SATELITI GENERATI RANDOM AVAND IN VEDERE SCOATEREA IN EVIDENTA A RELEVANTEI ALEGERII PUNCTULUI INITIAL#############")
+    print("Nr sateliti: " + str(nr_sateliti))
+    print("Spatiul n = " + str(n))
+
+
+    plt.show()
+
+
+
+
+if __name__ == '__main__':
+
+    exemplul_5_2()
     exemplul_5_3()
+    fixed_point_GPS_LS_random()
+    fixed_point_GPS_LS_random_influenta_punctului_de_start()
