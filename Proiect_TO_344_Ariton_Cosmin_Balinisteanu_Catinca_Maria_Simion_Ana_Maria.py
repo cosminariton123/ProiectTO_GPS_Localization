@@ -1,3 +1,4 @@
+from matplotlib.markers import MarkerStyle
 import numpy as np
 import matplotlib.pyplot as plt
 import random
@@ -83,8 +84,8 @@ def T(x, ai, di):
 
 def fixed_point_GPS_LS(xk, ai, di, pasi_acuratete):
 
-    assert verificare_asumption_matrice(a) == True , "a1...an se afla intr-un spatiu dimensional afin mai mic[de exmplu: lucram in plan(2D) si satelitii sunt coliniari]"
-    assert len(a) >= len(x) + 1, "Consecinta directa a faptului ca a1...an nu se afla intr-un spatiu dimensional afin mai mic nu este satisfacuta"
+    assert verificare_asumption_matrice(ai) == True , "a1...an se afla intr-un spatiu dimensional afin mai mic[de exmplu: lucram in plan(2D) si satelitii sunt coliniari]"
+    assert len(ai) >= len(xk) + 1, "Consecinta directa a faptului ca a1...an nu se afla intr-un spatiu dimensional afin mai mic nu este satisfacuta"
 
 
     for i in range(pasi_acuratete):
@@ -119,22 +120,26 @@ def fixed_point_GPS_LS_histograma_erorilor(x, a,  pasi_acuratete, x_true):
     plt.hist(B, bins = 13, ec='black', color='magenta')
     plt.title("Histograma erorilor GPS_LS")
 
-def x_a_pe_norm(xk, ai):
-    
-    rez = list()
-    for a in ai:
-        rez.append(xk-a / np.linalg.norm(xk-a))
-    
-    return rez
+
 
 def CF_LS_step(xk, ai, di):
     m = len(ai)
-    vec = [np.linalg.norm(x - a) for a in ai]
+    vec = [np.linalg.norm(xk - a) for a in ai]
 
 
-    
-    rez = 1/m * sum(ai + r(xk, ai, di)) *  ( 1/m   *  sum(x_a_pe_norm(xk, ai))  )
-    return rez
+    vec = [elem / elemvec for elem, elemvec in zip(xk-ai, vec)]
+
+    vec = sum(vec)
+
+    vec = 1/m * vec
+
+    vec = np.floor(vec)
+
+    vec = vec * r(xk, ai, di)
+
+    vec = vec + sum(ai) * 1/m
+   
+    return vec
 
 def fixed_point_CF_LS(xk, ai , di, pasi_acuratete):
     
@@ -152,7 +157,8 @@ def verificare_asumption_matrice(a):
     
     return True
 
-if __name__ == '__main__':
+
+def exemplul_5_2(nr_figura):
 
     x = np.array([-10, 5])
     a = np.array([[-29, -18], [7, -24], [-19, -27], [10, -27], [-9, 3], [-33, -34]])
@@ -163,30 +169,83 @@ if __name__ == '__main__':
 
  
 
-    #plt.figure(0)
-    #fixed_point_GPS_LS_afisare_convergenta(x, a, d, pasi_acuratete, x_true)
-    #plt.figure(1)
-    #fixed_point_GPS_LS_histograma_erorilor(x, a, pasi_acuratete, x_true)
-    #plt.show()
+    plt.figure(nr_figura)
+    nr_figura += 1
+    fixed_point_GPS_LS_afisare_convergenta(x, a, d, pasi_acuratete, x_true)
+    plt.figure(nr_figura)
+    nr_figura += 1
+    fixed_point_GPS_LS_histograma_erorilor(x, a, pasi_acuratete, x_true)
 
 
 
 
-    a = np.linspace(0, 10, 10**1)
-    b = np.linspace(0, 10, 10**1)
-
-
-    a_si_b_combinat = list()
-
-
-    for elem in a:
-        for elem in b:
-            
-
-
-    print(a_si_b_combinat)
+    a = np.linspace(-30, 20, 10**1)
+    b = np.linspace(-30, 20, 10**1)
 
     x, y = np.meshgrid(a,b)
 
-    z = generare_di(x_true, )
-   # print(x)
+    z = list()
+    for liniex, liniey in zip(x,y):
+        aux = list()
+        for elemx, elemy in zip (liniex, liniey):
+            aux.append([elemx, elemy])
+        
+        daux = generare_di(x_true, aux)
+
+        z.append(daux)
+    z= np.array(z)
+
+
+    plt.figure(nr_figura)
+    nr_figura += 1
+    ax = plt.axes(projection = '3d')
+    plt.contour(x,y,z, 50)
+    ax.scatter(x_true[0], x_true[1], 0, color='red', label='Punctul de minim x_true')
+    plt.title("Functia care trebuie minimizata GPS_LS")
+    plt.legend()
+    plt.show()
+    
+    
+
+def exemplul_5_3():
+    x = np.array([3, -7])
+    a = np.array([[1, 9], [ 2, 7], [5, 8], [7, 7], [9, 5], [3, 7]])
+    x_true = np.array([0, -8])
+    pasi_acuratete = 5
+    d = generare_di(x_true, a)
+    #d = [0 for i in a]
+    #d = np.array(d)
+
+
+    fig, axes = plt.subplots()
+    axes.set_aspect(1)
+
+    axes.set_xlim([-50, 50])
+    axes.set_ylim([-50, 50])
+
+    for satelit in a:
+        plt.plot(satelit[0], satelit[1], 'ro')
+
+
+    x_gasit_optim = fixed_point_CF_LS(x, a, d, pasi_acuratete)
+
+
+    plt.plot(x_gasit_optim[0], x_gasit_optim[1],'bo',  label = 'Centrul cercului gasit prin CF_LS' ,markersize = 3)
+    plt.plot(x_true[0], x_true[1], 'mo', label = 'Centrul real al cercului', markersize = 5)
+
+    draw_circle = plt.Circle((x_gasit_optim[0], x_gasit_optim[1]), r(x_gasit_optim, a, d),fill=False, lw = 3)
+    axes.add_artist(draw_circle)
+
+    plt.title('Circle fitting LS\n ' + 'distanta fata de punctul de optim :' + str( np.linalg.norm( fixed_point_CF_LS(x, a, d, pasi_acuratete)- x_true)))
+
+    plt.legend()
+    plt.show()
+
+
+if __name__ == '__main__':
+
+    nr_figura = 0
+
+    exemplul_5_2(nr_figura)
+
+    exemplul_5_3()
