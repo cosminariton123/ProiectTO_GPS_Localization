@@ -55,18 +55,7 @@ def exemplul_5_2():
 
 if __name__ == '__main__':
 
-    #exemplul_5_2()
-    #exemplul_5_3()
-    #fixed_point_GPS_LS_random()
-    #fixed_point_GPS_LS_random_influenta_punctului_de_start()
-
-
-
-    x = np.array([-10, 5])
-    a = np.array([[-29, -18], [7, -24], [-19, -27], [10, -27], [-9, 3], [-33, -34]])
-    x_true = np.array([-8, -2])
-    pasi_acuratete = 10**2
-    d = generare_di(x_true, a)
-
-    generare_B(a, d)
-    generare_b(a, d)
+    exemplul_5_2()
+    exemplul_5_3()
+    fixed_point_GPS_LS_random()
+    fixed_point_GPS_LS_random_influenta_punctului_de_start()
