@@ -15,7 +15,10 @@ def fixed_point_GPS_LS(xk, ai, di, pasi_acuratete):
 
 def fixed_point_GPS_LS_afisare_convergenta(xk, ai, di, pasi_acuratete, x_true):
 
-    plt.title("Convergenta metodei GPS_LS pentru o rulare la intamplare")
+    nr_sateliti = len(ai)
+    n_spatiu = len(xk)
+
+    plt.title("Convergenta metodei GPS_LS pentru o rulare la intamplare\n" + "Numarul satelitilor: " + str(nr_sateliti) + "\nSpatiul n = "+ str(n_spatiu))
     lista_pt_plot = list()
     for i in range(pasi_acuratete):
         xk = T(xk, ai, di)
@@ -36,9 +39,11 @@ def fixed_point_GPS_LS_histograma_erorilor(x, a,  pasi_acuratete, x_true):
         B.append(np.linalg.norm(fixed_point_GPS_LS(x, a, d, pasi_acuratete) - x_true))
 
 
+    nr_sateliti = len(a)
+    n_spatiu = len(x)
     
     plt.hist(B, bins = 13, ec='black', color='magenta')
-    plt.title("Histograma erorilor GPS_LS")
+    plt.title("Histograma erorilor GPS_LS\n" + "Numarul satelitilor: " + str(nr_sateliti) + "\nSpatiul n = "+ str(n_spatiu))
 
 
 def fixed_point_GPS_LS_histograma_erorilor_influentat_de_x_initial(x, a,d,  pasi_acuratete, x_true, INTERVAL_STANGA, INTERVAL_DREAPTA, n):
@@ -50,9 +55,11 @@ def fixed_point_GPS_LS_histograma_erorilor_influentat_de_x_initial(x, a,d,  pasi
         x = np.array([random.random() * (INTERVAL_DREAPTA - INTERVAL_STANGA) + INTERVAL_STANGA for i in range(n)])
 
 
+    nr_sateliti = len(a)
+    n_spatiu = len(x)
     
     plt.hist(B, bins = 13, ec='black', color='magenta')
-    plt.title("Histograma erorilor GPS_LS in functie de x-ul initial")
+    plt.title("Histograma erorilor GPS_LS in functie de x-ul initial\n" + "Numarul satelitilor: " + str(nr_sateliti) + "\nSpatiul n = "+ str(n_spatiu))
 
 
 
