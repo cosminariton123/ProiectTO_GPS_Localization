@@ -25,13 +25,13 @@ def exemplul_5_2():
 
 
 
-    a = np.linspace(-30, 20, 10**1)
-    b = np.linspace(-30, 20, 10**1)
+    vector1 = np.linspace(-30, 20, 10**1)
+    vector2 = np.linspace(-30, 20, 10**1)
 
-    x, y = np.meshgrid(a,b)
+    vector1, vector2 = np.meshgrid(vector1,vector2)
 
     z = list()
-    for liniex, liniey in zip(x,y):
+    for liniex, liniey in zip(vector1,vector2):
         aux = list()
         for elemx, elemy in zip (liniex, liniey):
             aux.append([elemx, elemy])
@@ -45,9 +45,16 @@ def exemplul_5_2():
     plt.figure(nr_figura)
     nr_figura += 1
     ax = plt.axes(projection = '3d')
-    plt.contour(x,y,z, 50)
+    plt.contour(vector1,vector2,z, 50)
     ax.scatter(x_true[0], x_true[1], 0, color='red', label='Punctul de minim x_true')
-    plt.title("Functia care trebuie minimizata GPS_LS")
+
+    x_gasit =  fixed_point_GPS_LS(x, a, d, pasi_acuratete)
+
+    aux = [[x_gasit[0], x_gasit[1]], [0, 0]]
+    daux = generare_di(x_true, aux)
+    daux = np.array(daux)
+    ax.scatter(x_gasit[0], x_gasit[1], daux[0], color='blue', label= 'Punctul de optim estimat')
+    plt.title("Functia care trebuie minimizata GPS_LS\n" + "Eroarea este de: " + str(np.linalg.norm(x_true - x_gasit)))
     plt.legend()
     plt.show()
 
