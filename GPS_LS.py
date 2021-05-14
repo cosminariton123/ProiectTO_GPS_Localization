@@ -108,6 +108,54 @@ def fixed_point_GPS_LS_random():
 
 
 
+def fixed_point_GPS_LS_random_x0_ales():
+    nr_figura = 0
+
+    NR_MAXIM_DIMENSIUNI = 10
+    NR_MAXIM_SATELITI = 20
+    INTERVAL_STANGA = -10
+    INTERVAL_DREAPTA = 10
+
+    n = random.randint(2, NR_MAXIM_DIMENSIUNI)
+
+    nr_sateliti = 0
+
+    while nr_sateliti < n+1:
+        nr_sateliti = random.randint(0,NR_MAXIM_SATELITI)
+
+
+    a = list()
+    for elem in range(nr_sateliti):
+        a.append(np.array([random.random() * (INTERVAL_DREAPTA - INTERVAL_STANGA) + INTERVAL_STANGA for i in range(n)]))
+    
+    a= np.array(a)
+
+    x_true = np.array([random.random() * (INTERVAL_DREAPTA - INTERVAL_STANGA) + INTERVAL_STANGA for i in range(n)])
+    pasi_acuratete = 10**2
+    d = generare_di(x_true, a)
+
+    
+    x = find_x0(a, d)
+
+    plt.figure(nr_figura)
+    fixed_point_GPS_LS_histograma_erorilor(x, a, pasi_acuratete, x_true)
+    nr_figura +=1
+    plt.figure(nr_figura)
+    fixed_point_GPS_LS_afisare_convergenta(x, a, d, pasi_acuratete, x_true)
+
+    print("################REZULTATE PENTRU SPATIU SI SATELITI GENERATI RANDOM#############")
+    print("Nr sateliti: " + str(nr_sateliti))
+    print("Spatiul n = " + str(n))
+    
+    plt.legend()
+    plt.show()
+
+
+
+
+
+
+
 def fixed_point_GPS_LS_random_influenta_punctului_de_start():
 
     nr_figura = 0
