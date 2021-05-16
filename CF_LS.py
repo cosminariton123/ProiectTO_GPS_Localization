@@ -12,7 +12,7 @@ def CF_LS_step(xk, ai, di):
 
     vec = 1/m * vec
 
-    vec = np.floor(vec)
+    #vec = np.floor(vec)
 
     vec = vec * r(xk, ai, di)
 
@@ -37,8 +37,8 @@ def exemplul_5_3():
     x_true = np.array([0, -8])
     pasi_acuratete = 30
     d = generare_di(x_true, a)
-    #d = [0 for i in a]
-    #d = np.array(d)
+    d = [0 for i in a]
+    d = np.array(d)
 
 
     fig, axes = plt.subplots()
@@ -55,12 +55,13 @@ def exemplul_5_3():
 
 
     plt.plot(x_gasit_optim[0], x_gasit_optim[1],'bo',  label = 'Centrul cercului gasit prin CF_LS' ,markersize = 3)
-    plt.plot(x_true[0], x_true[1], 'mo', label = 'Centrul real al cercului', markersize = 5)
+    #plt.plot(x_true[0], x_true[1], 'mo', label = 'Centrul real al cercului', markersize = 5)
 
-    draw_circle = plt.Circle((x_gasit_optim[0], x_gasit_optim[1]), np.mean([np.linalg.norm(x_gasit_optim - ai) for ai in a]) ,fill=False, lw = 3)
+    #draw_circle = plt.Circle((x_gasit_optim[0], x_gasit_optim[1]), np.mean([np.linalg.norm(x_gasit_optim - ai) for ai in a]) ,fill=False, lw = 3)
+    draw_circle = plt.Circle((x_gasit_optim[0], x_gasit_optim[1]), r(x_gasit_optim, a, d) ,fill=False, lw = 3)
     axes.add_artist(draw_circle)
 
-    plt.title('Circle fitting LS\n ' + 'distanta fata de punctul de optim :' + str( np.linalg.norm( fixed_point_CF_LS(x, a, d, pasi_acuratete)- x_true)))
+    plt.title('Circle fitting LS\n raza = ' + str(r(x_gasit_optim, a , d)) + "\nx_gasit = " + str(x_gasit_optim))#\n ' + 'distanta fata de punctul de optim :' + str( np.linalg.norm( fixed_point_CF_LS(x, a, d, pasi_acuratete)- x_true)))
 
     plt.legend()
     plt.show()

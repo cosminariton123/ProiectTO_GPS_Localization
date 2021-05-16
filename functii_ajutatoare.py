@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import random
+import copy
 
 ######## FUNCTII PT GENERARE DI ##########
 
@@ -46,7 +47,7 @@ def generare_di(x, ai):
 
     while verificare_vector_di(di) == False or r < 0:
         
-        r = norm(0, 20)
+        r = norm(0, 10)
         di = [np.linalg.norm(x-a) - r + norm(0, 1) for a in ai]
         di = np.array(di)
 
@@ -82,8 +83,9 @@ def r(x, ai, di):
     rez = 1/m * sum(vec)
     
 
-    rez = np.abs(rez)
-    rez = np.floor(rez)
+    #rez = np.abs(rez)
+    #rez = np.floor(rez)
+    rez = max(0, rez)
 
     return rez
 
@@ -109,11 +111,11 @@ def generare_A_caciula(a):
     A_caciula = list()
 
     for elem in a:    
-        linie = [2* np.transpose( elem ) , -1]
-        linie = np.array(linie, dtype=object)
+        linie = [2* elem[0] , 2*elem[1]  , -1]
+        linie = np.array(linie)
         A_caciula.append(linie)
 
-    A_caciula = np.array(A_caciula, dtype=object)
+    A_caciula = np.array(A_caciula)
     return A_caciula
 
 
@@ -122,9 +124,29 @@ def verificare_asumption_matrice(a):
 
     A_caciula = generare_A_caciula(a)
 
-    for linie in A_caciula:
-        if sum(linie[0]) == 0:
-            return False
+    A_caciula = np.transpose(A_caciula)
+
+    iter1 = -1
+
+    for linie1 in A_caciula:
+        iter1 += 1
+
+        iter2 = -1
+        for linie2 in A_caciula:
+            iter2 += 1
+
+            if iter1 != iter2:
+                
+                aux = linie1 / linie2
+
+                flag = True
+                for elem1 in aux:
+                    for elem2 in aux:
+                        if elem1 != elem2:
+                            flag = False
+
+                if flag == True:
+                    return False
     
     return True
 
@@ -136,21 +158,20 @@ def verificare_asumption_matrice(a):
 
 
 def generare_B(a, d):
-    m = len(a)
+
     B = list()
 
-    for i in range(m):
-        aux = [2* np.transpose(a[i]) , -1 , 2* d[i]]
+    for ai, di in zip(a, d):
+        aux = [2* ai[0] , 2*ai[1], -1 , 2* di]
         B.append(aux)
     
-    B= np.array(B, dtype=object)
+    B= np.array(B)
 
     return B
 
 
 def generare_b(a, d):
     
-    m = len(a)
     b = list()
 
     b = [np.linalg.norm(ai)**2 - di**2 for ai, di in zip(a,d)]
@@ -173,37 +194,35 @@ def generare_In(n):
 
 def generare_On(n):
     
-    return np.array([ np.array([0 for i in range(n)]) for i in range(n)])
+    return [[0 for i in range(n)] for i in range(n)]
 
 
 def generare_D(n):
     
-    D = list()
+    D = generare_In(n)
 
-    linie = [generare_In(n), generare_On(n), generare_On(n)]
-    linie = np.array(linie, dtype=object)
-    D.append(linie)
+    for linie in D:
+        linie.append(0)
+        linie.append(0)
 
-    linie = [np.transpose(generare_On(n))   ,  0    ,    0]
-    linie = np.array(linie, dtype=object)
-    D.append(linie)
+    D.append([0 for i in range(n+2)])
+    D.append([0 if i < n+1 else -1 for i in range(n+2)])
 
-    linie = [np.transpose(generare_On(n)),     0        ,   -1]
-    linie = np.array(linie, dtype=object)
-    D.append(linie)
+    D = np.array(D)
 
     return D
 
 def generare_g(n):
-    linie = [generare_On(n) , 1, 0]
-    linie = np.array(linie, dtype=object)
     
-    rez = list()
-    for elem in linie:
-        rez.append( elem * 1/2)
 
+    linie = [0 for i in range(n)]
+    linie.append(1)
+    linie.append(0)
+
+    linie = np.array(linie)
+    linie = 1/2 * linie
     
-    return rez
+    return linie
 
 
 
@@ -211,20 +230,26 @@ def generare_g(n):
 
 def generare_E(n):
 
-    E = list()
+    E = generare_In(n)
 
-    linie = [generare_In(n), generare_On(n)]
-    linie = np.array(linie, dtype=object)
-
-    E.append(linie)
-
-
-    linie = [np.transpose(generare_On(n)) , 0]
-    linie = np.array(linie, dtype=object)
-
-    E.append(linie)
+    for linie in E:
+        linie.append(0)
+    
+    E.append([0 for i in range(n+1)])
+    
+    E = np.array(E)
 
     return E
+
+
+
+def sistem_compatibil(matrice, b):
+
+    pass
+    max_rang_extins = 0
+
+    
+    copie = copy.deepcopy(matrice)
 
 
 def generare_beta(n, a):

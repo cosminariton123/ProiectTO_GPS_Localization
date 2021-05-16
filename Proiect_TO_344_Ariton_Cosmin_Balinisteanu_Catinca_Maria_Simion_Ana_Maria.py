@@ -1,3 +1,4 @@
+import numpy as np
 from GPS_LS import *
 from CF_LS import *
 
@@ -5,6 +6,8 @@ from CF_LS import *
 def exemplul_5_2():
 
     nr_figura = 0
+
+    STANGA, DREAPTA = -50, 40
 
     x = np.array([-10, 5])
     a = np.array([[-29, -18], [7, -24], [-19, -27], [10, -27], [-9, 3], [-33, -34]])
@@ -25,8 +28,8 @@ def exemplul_5_2():
 
 
 
-    vector1 = np.linspace(-30, 20, 10**1)
-    vector2 = np.linspace(-30, 20, 10**1)
+    vector1 = np.linspace(STANGA, DREAPTA, 10**1)
+    vector2 = np.linspace(STANGA, DREAPTA, 10**1)
 
     vector1, vector2 = np.meshgrid(vector1,vector2)
 
@@ -46,7 +49,11 @@ def exemplul_5_2():
     nr_figura += 1
     ax = plt.axes(projection = '3d')
     plt.contour(vector1,vector2,z, 50)
-    ax.scatter(x_true[0], x_true[1], 0, color='red', label='Punctul de minim x_true')
+    ax.scatter(x_true[0], x_true[1], 0, color='green', label='Punctul de minim x_true')
+
+    ax.scatter(a[0][0], a[0][1], d[0], color='red', label = 'Satelitii')
+    for ai, di in zip(a[1:], d[1:]):
+        ax.scatter(ai[0], ai[1], di , color = 'red')
 
     x_gasit =  fixed_point_GPS_LS(x, a, d, pasi_acuratete)
 
@@ -67,3 +74,14 @@ if __name__ == '__main__':
     fixed_point_GPS_LS_random()
     fixed_point_GPS_LS_random_x0_ales()
     fixed_point_GPS_LS_random_influenta_punctului_de_start()
+
+
+    x = np.array([-10, 5])
+    a = np.array([[-29, -18], [7, -24], [-19, -27], [10, -27], [-9, 3], [-33, -34]])
+
+    d = np.array([6, 10, 7 ,8, 1, 10])
+
+    #a = np.array([[-1, -2], [3, 6], [-20, -40], [60, 120], [30, 60], [10, 20]])
+    print(generare_A_caciula(a))
+
+    print(verificare_asumption_matrice(a))
