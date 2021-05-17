@@ -1,12 +1,16 @@
 import numpy as np
 from GPS_LS import *
 from CF_LS import *
+from GPS_SLS import *
+
+
+
 
 
 def exemplul_5_2():
 
     nr_figura = 0
-
+    NR_PROCESOARE = 12
     STANGA, DREAPTA = -50, 40
 
     x = np.array([-10, 5])
@@ -16,6 +20,11 @@ def exemplul_5_2():
     d = generare_di(x_true, a)
     
 
+    x_gasit =  fixed_point_GPS_LS(x, a, d, pasi_acuratete)
+    x_gasit_sls = GPS_SLS(x, a, d, pasi_acuratete)
+
+    print("x-ul gasit prin metoda GPS_LS: " +str(x_gasit))
+    print("x-ul gasit prin metoda GPS_SLS: " +str(x_gasit_sls))
  
 
     plt.figure(nr_figura)
@@ -26,6 +35,21 @@ def exemplul_5_2():
     fixed_point_GPS_LS_histograma_erorilor(x, a, pasi_acuratete, x_true)
 
 
+    plt.figure(nr_figura)
+    nr_figura = GPS_SLS_afisare_convergenta(x, a, d, pasi_acuratete, x_true, nr_figura)
+    nr_figura += 1
+    plt.figure(nr_figura)
+
+
+    while True:
+        try:
+            GPS_SLS_histograma_erorilor(x, a, pasi_acuratete, x_true)
+        except AssertionError:
+            continue
+        break
+    
+    nr_figura += 1
+    
 
 
     vector1 = np.linspace(STANGA, DREAPTA, 10**1)
@@ -55,13 +79,14 @@ def exemplul_5_2():
     for ai, di in zip(a[1:], d[1:]):
         ax.scatter(ai[0], ai[1], di , color = 'red')
 
-    x_gasit =  fixed_point_GPS_LS(x, a, d, pasi_acuratete)
+    
 
     aux = [[x_gasit[0], x_gasit[1]], [0, 0]]
     daux = generare_di(x_true, aux)
     daux = np.array(daux)
-    ax.scatter(x_gasit[0], x_gasit[1], daux[0], color='blue', label= 'Punctul de optim estimat')
-    plt.title("Functia care trebuie minimizata GPS_LS\n" + "Eroarea este de: " + str(np.linalg.norm(x_true - x_gasit)))
+    ax.scatter(x_gasit[0], x_gasit[1], daux[0], color='blue', label= 'Punctul de optim estimat GPS_LS')
+    ax.scatter(x_gasit_sls[0], x_gasit_sls[1], daux[0], color='magenta', label= 'Punctul de optim estimat GPS_SLS')
+    plt.title("Reprezentare 3D a minimizarii\n" + "Eroarea pentru GPS_LS este de: " + str(np.linalg.norm(x_true - x_gasit)) + "\nEroarea pentru GPS_SLS este de: " +str(np.linalg.norm(x_true - x_gasit_sls)))
     plt.legend()
     plt.show()
 
@@ -69,19 +94,22 @@ def exemplul_5_2():
 
 if __name__ == '__main__':
 
+    print("########     Exemplul 5_2    ##########")
     exemplul_5_2()
     exemplul_5_3()
-    fixed_point_GPS_LS_random()
+
+
+    print('\n')
+    nr_figura = 0
+    fixed_point_GPS_LS_random(nr_figura)
+    nr_figura = nr_figura + 1
+    print('')
+    nr_figura = GPS_SLS_random(nr_figura)
+    nr_figura = nr_figura + 1
+    plt.legend()
+    plt.show()
+
+
     fixed_point_GPS_LS_random_x0_ales()
     fixed_point_GPS_LS_random_influenta_punctului_de_start()
 
-
-    x = np.array([-10, 5])
-    a = np.array([[-29, -18], [7, -24], [-19, -27], [10, -27], [-9, 3], [-33, -34]])
-
-    d = np.array([6, 10, 7 ,8, 1, 10])
-
-    #a = np.array([[-1, -2], [3, 6], [-20, -40], [60, 120], [30, 60], [10, 20]])
-    print(generare_A_caciula(a))
-
-    print(verificare_asumption_matrice(a))

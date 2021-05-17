@@ -65,8 +65,7 @@ def fixed_point_GPS_LS_histograma_erorilor_influentat_de_x_initial(x, a,d,  pasi
 
 
 
-def fixed_point_GPS_LS_random():
-    nr_figura = 0
+def fixed_point_GPS_LS_random(nr_figura):
 
     NR_MAXIM_DIMENSIUNI = 10
     NR_MAXIM_SATELITI = 20
@@ -99,12 +98,10 @@ def fixed_point_GPS_LS_random():
     plt.figure(nr_figura)
     fixed_point_GPS_LS_afisare_convergenta(x, a, d, pasi_acuratete, x_true)
 
-    print("################REZULTATE PENTRU SPATIU SI SATELITI GENERATI RANDOM#############")
+    print("################REZULTATE PENTRU SPATIU SI SATELITI GENERATI RANDOM GPS_SLS#############")
     print("Nr sateliti: " + str(nr_sateliti))
     print("Spatiul n = " + str(n))
     
-    plt.legend()
-    plt.show()
 
 
 

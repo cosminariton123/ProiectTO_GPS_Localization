@@ -35,7 +35,7 @@ def exemplul_5_3():
     x = np.array([3, -7])
     a = np.array([[1, 9], [ 2, 7], [5, 8], [7, 7], [9, 5], [3, 7]])
     x_true = np.array([0, -8])
-    pasi_acuratete = 30
+    pasi_acuratete = 10**2
     d = generare_di(x_true, a)
     d = [0 for i in a]
     d = np.array(d)
@@ -63,5 +63,28 @@ def exemplul_5_3():
 
     plt.title('Circle fitting LS\n raza = ' + str(r(x_gasit_optim, a , d)) + "\nx_gasit = " + str(x_gasit_optim))#\n ' + 'distanta fata de punctul de optim :' + str( np.linalg.norm( fixed_point_CF_LS(x, a, d, pasi_acuratete)- x_true)))
 
+    plt.legend()
+    plt.show()
+
+    convergenta_CF_LS(x, a, d, pasi_acuratete)
+
+def convergenta_CF_LS(xk, ai, di, pasi_acuratete):
+
+    plt.title("Convergenta metodei CF_LS pentru o rulare la intamplare")
+    lista_pt_plot = list()
+    sol = xk
+    for i in range(pasi_acuratete):
+        sol = CF_LS_step(sol, ai, di)
+        aux2 = 0
+        for a in ai:
+            aux3 = a - sol
+            aux = np.linalg.norm(aux3)
+            aux2 += np.abs(aux - r(sol, ai, di))
+        lista_pt_plot.append(aux2)
+
+
+
+    plt.plot(range(pasi_acuratete), lista_pt_plot, linewidth=3, label="Evolutia sumelor distantelor de la cerc la puncte",
+             color='magenta')
     plt.legend()
     plt.show()

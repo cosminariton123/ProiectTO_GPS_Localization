@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 import copy
+import multiprocessing
 
 ######## FUNCTII PT GENERARE DI ##########
 
@@ -53,20 +54,20 @@ def generare_di(x, ai):
 
     return di
 
-def generare_di_ce_reurneaza_si_r(x, ai):
-
-    r = norm(0, 10)
-
-    di = [np.linalg.norm(x-a) - r + norm(0, 1) for a in ai]
-    di = np.array(di)
-
-    while verificare_vector_di(di) == False or r < 0:
-        
-        r = norm(0, 10)
-        di = [np.linalg.norm(x-a) - r + norm(0, 1) for a in ai]
-        di = np.array(di)
-
-    return di, r
+#def generare_di_ce_returneaza_si_r(x, ai):
+#
+#    r = norm(0, 10)
+#
+#    di = [np.linalg.norm(x-a) - r + norm(0, 1) for a in ai]
+#    di = np.array(di)
+#
+#    while verificare_vector_di(di) == False or r < 0:
+#        
+#        r = norm(0, 10)
+#        di = [np.linalg.norm(x-a) - r + norm(0, 1) for a in ai]
+#        di = np.array(di)
+#
+#    return di, r
 
 
 
@@ -111,7 +112,11 @@ def generare_A_caciula(a):
     A_caciula = list()
 
     for elem in a:    
-        linie = [2* elem[0] , 2*elem[1]  , -1]
+        linie = list()
+        for pozitie in elem:
+            linie.append(2*pozitie)
+        linie.append(-1)
+
         linie = np.array(linie)
         A_caciula.append(linie)
 
@@ -162,7 +167,14 @@ def generare_B(a, d):
     B = list()
 
     for ai, di in zip(a, d):
-        aux = [2* ai[0] , 2*ai[1], -1 , 2* di]
+        
+        aux = list()
+        for elem in ai:
+            aux.append(2*elem)
+        
+        aux.append(-1)
+        aux.append(2*di)
+
         B.append(aux)
     
     B= np.array(B)
@@ -243,32 +255,82 @@ def generare_E(n):
 
 
 
-def sistem_compatibil(matrice, b):
+def verificare_apartinere_range(matrice, b):
 
-    pass
-    max_rang_extins = 0
+    m = len(matrice)
+    n = len(matrice[0])
 
+    for i in range(m - n + 2):
+        aux = [liniuta for liniuta in matrice[i:i+n-1]]
+
+        indice_linie_curenta = -1
+        for linie in matrice:
+            indice_linie_curenta += 1
+
+            if indice_linie_curenta not in range(i, i+n-1):
+                aux.append(linie)
+
+                rang = np.linalg.matrix_rank(aux)
+                be = copy.deepcopy(b[i: i+n-1])
+                be = list(be)
+                be.append(b[indice_linie_curenta])
+
+                flag = False
+                for coloana in range(n):
+                    extinsa = copy.deepcopy(aux)
+                    extinsa = np.array(extinsa)
+                    
+                    extinsa[:,coloana] = np.array(be)
+
+                    if np.linalg.matrix_rank(extinsa) == rang :
+                        flag = True
+                
+                if flag == False:
+                    return False
+
+                aux.pop(len(aux)-1)
+
+    return True
+
+
+
+def generare_w(A_caciula, d, n):
+    rez = np.linalg.inv((np.transpose(A_caciula) @ A_caciula)) @ np.transpose(A_caciula) @ d
     
-    copie = copy.deepcopy(matrice)
+    return rez[0:n]
 
 
-def generare_beta(n, a):
-    E = generare_E(n)
-    A_caciula = generare_A_caciula(a)
+def generare_beta(A_caciula, d,  E):
+    rez = E @ np.linalg.inv((np.transpose(A_caciula) @ A_caciula)) @ np.transpose(A_caciula) @ d
+    
+    return rez
 
-    rez = E@( np.transpose(A_caciula) @ A_caciula)      # Cine naiba s-a gandit ca poate inmulti matrici de genul?
 
-
-def cautare_lambda_caciula(B, D):
+def cautare_lambda_caciula(B, D, A_caciula, d, w):
 
     lambda_caciula = None
 
+    conditie = np.linalg.norm(w) - 1/2
+
+    assert  verificare_apartinere_range(A_caciula, d) == False or conditie != 0 , "Nu se poate afla lambda deoarece d apartine range(A_caciula) si ||w|| = 1/2"
+
+    if verificare_apartinere_range(A_caciula, d) == False:
+        return 0
+
+
+    conditie = np.linalg.norm(w) - 1/2
+
+    if conditie > 0:
+        lambda_caciula = 1
+    elif conditie < 0 :
+        lambda_caciula = -1
+    
     while True:
         G = np.transpose(B)@B + lambda_caciula * D
 
         flag = True
-        for elem in np.eigvalues(G):
-            if elem == False:
+        for elem in np.linalg.eigvals(G):
+            if elem <= 0:
                 flag = False
         
         if flag == True:
@@ -277,10 +339,103 @@ def cautare_lambda_caciula(B, D):
         lambda_caciula = lambda_caciula / 2
 
 
+def y(lamb, B, D, b, g):
+    
+    return np.linalg.inv( np.transpose(B) @ B + lamb * D )    @   (np.transpose(B)@b + lamb * g)
+
+
+def fi(lamb, B, D, b, g):
+    return np.transpose(y(lamb, B, D, b, g)) @ D @ y(lamb, B, D, b, g) - 2 * np.transpose(g) @ y(lamb, B, D, b, g)
+
+
+
+def metoda_bisectiei_grafica(f, B, D, b, g, stanga, dreapta, pasi_acuratete):
+
+    N = pasi_acuratete
+
+    plt.plot(stanga, f(stanga, B, D, b, g), 'o', color = 'green', label = 'punctele de start ale metodei bisectiei')
+    plt.plot(dreapta, f(dreapta, B, D, b, g), 'o', color = 'green')
+
+    flag_afisare_label = True
+
+
+    if f(stanga, B, D, b, g) == 0:   #verificam capetele intervalului
+        plt.plot(stanga, f(stanga, B, D, b, g), 'bo', label ='radacina unica gasita')
+        return stanga
+    elif f(dreapta, B, D, b, g) == 0:
+        plt.plot(dreapta, f(dreapta, B, D, b, g), 'bo', label ='radacina unica gasita')
+        return dreapta
+    else:
+
+        assert f(stanga, B, D, b, g) * f(dreapta, B, D, b, g) <= 0 , "Eroare, nu exista radacina la care sa convearga metoda bisectiei"
+
+        for i in range(0,N):        #implementarea metodei bisectiei
+            xk = (stanga+dreapta)/2
+
+            if f(xk, B, D, b, g)==0: 
+                plt.plot(xk, f(xk, B, D, b, g), 'bo', label ='radacina unica gasita')
+                return xk
+
+            elif f(xk, B, D, b, g) * f(dreapta, B, D, b, g) < 0:      #restrangem intervalul a si b in care cautam. verificam ce jumatate a intervalului initial sa pastram cu
+                stanga = xk                  #Teorema valorilor intermediare (Darboux) din care scoatem f(t)*f(u)<0 => exista o radacina in intervalul [t,u]
+                
+                if flag_afisare_label == True:
+                    plt.plot(xk, f(xk, B, D, b, g),'o', color='red', label='Pasii metodei bisectiei')
+                    flag_afisare_label = False
+                else:
+                    plt.plot(xk, f(xk, B, D, b, g),'o', color='red')
+
+            elif f(xk, B, D, b, g) * f(stanga, B, D, b, g) < 0 :
+                dreapta= xk
+                if flag_afisare_label == True:
+                    plt.plot(xk, f(xk, B, D, b, g), 'o', color='red', label='Pasii metodei bisectiei')
+                    flag_afisare_label = False
+                else:
+                    plt.plot(xk, f(xk, B, D, b, g), 'o', color='red')
+
+        plt.plot((stanga+dreapta)/2, f((stanga+dreapta)/2, B, D, b, g), 'bo', label ='radacina unica gasita')
+        return    (stanga+dreapta)/2
 
 
 
 
+def metoda_bisectiei(f, B, D, b, g, stanga, dreapta, pasi_acuratete):
+
+    N = pasi_acuratete 
+
+    puncte_pentru_convergenta = list()
+
+    #poate sterg
+    puncte_pentru_convergenta.append(stanga)
+    puncte_pentru_convergenta.append(dreapta)
+    #end-poate sterg
+
+    if f(stanga, B, D, b, g) == 0:   #verificam capetele intervalului
+        return stanga, puncte_pentru_convergenta
+    elif f(dreapta, B, D, b, g) == 0:
+        return dreapta, puncte_pentru_convergenta
+    else:
+
+        assert f(stanga, B, D, b, g) * f(dreapta, B, D, b, g) <= 0 , "Eroare, nu exista radacina la care sa convearga metoda bisectiei"
+
+        for i in range(0,N):        #implementarea metodei bisectiei
+            xk = (stanga+dreapta)/2
+
+            if f(xk, B, D, b, g)==0: 
+                puncte_pentru_convergenta.append(xk)
+                return xk, puncte_pentru_convergenta
+
+            elif f(xk, B, D, b, g) * f(dreapta, B, D, b, g) < 0:      #restrangem intervalul a si b in care cautam. verificam ce jumatate a intervalului initial sa pastram cu
+                stanga = xk                  #Teorema valorilor intermediare (Darboux) din care scoatem f(t)*f(u)<0 => exista o radacina in intervalul [t,u]
+                
+                puncte_pentru_convergenta.append(xk)
+
+            elif f(xk, B, D, b, g) * f(stanga, B, D, b, g) < 0 :
+                dreapta= xk
+                puncte_pentru_convergenta.append(xk)
+
+        puncte_pentru_convergenta.append((stanga+dreapta)/2)
+        return    (stanga+dreapta)/2, puncte_pentru_convergenta
 
 ############### FUNCTII PT x0 OPTIM PENTRU GPS_LS FOLOSIND GPS_SLS ##################
 
