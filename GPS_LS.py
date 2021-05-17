@@ -1,6 +1,6 @@
 from functii_ajutatoare import *
-
-
+from GPS_SLS import *
+from scipy.optimize import basinhopping, approx_fprime
 
 def fixed_point_GPS_LS(xk, ai, di, pasi_acuratete):
 
@@ -94,6 +94,7 @@ def fixed_point_GPS_LS_random(nr_figura):
 
     plt.figure(nr_figura)
     fixed_point_GPS_LS_histograma_erorilor(x, a, pasi_acuratete, x_true)
+    
     nr_figura +=1
     plt.figure(nr_figura)
     fixed_point_GPS_LS_afisare_convergenta(x, a, d, pasi_acuratete, x_true)
@@ -102,6 +103,8 @@ def fixed_point_GPS_LS_random(nr_figura):
     print("Nr sateliti: " + str(nr_sateliti))
     print("Spatiul n = " + str(n))
     
+
+    return nr_figura
 
 
 
@@ -191,3 +194,150 @@ def fixed_point_GPS_LS_random_influenta_punctului_de_start():
 
 
     plt.show()
+
+
+
+
+
+
+    ############### FUNCTII PT x0 OPTIM PENTRU GPS_LS FOLOSIND GPS_SLS ##################
+
+"""alg pag 22 +  lema 5.1 pagina 21 
+Find x0 satisfying : f(x0) < min {f(a1), ..f(an), fliminf }
+f_liminf = np.
+"""
+from scipy.optimize import minimize
+ 
+def function_liminf(z, a,d):
+    m = len(a)
+
+    A = np.transpose(a[0])
+    for i in range(1,m):
+        aux = np.transpose(a[i])
+        A = np.vstack([A,aux])
+  
+
+    id_m = [1]
+    for i in range(1,m):
+        id_m = np.vstack([id_m,[1]])
+   
+    t3 =  np.add(np.matmul(A,z) , d )
+    t1 = np.transpose(t3)
+    t2 = id_m - np.matmul(id_m, np.transpose(id_m))/m
+    return np.matmul(np.matmul(t1,t2),t3)
+
+def constraint_liminf(z):
+    return np.linalg.norm(z) - 1 
+
+
+def constraint_liminf(z):
+    return np.linalg.norm(z) - 1
+
+def h(x,ai,di):
+    j = np.where(arr=x)
+    j = j[0]
+    copy_ai = np.copy(ai)
+    copy_ai= np.delete(ai,j)
+
+    m = len(copy_ai) - 1
+
+    vec = [np.linalg.norm(x - a) for a in copy_ai]
+    vec = np.array(vec)
+    vec = sum(vec)
+    vec = vec/m
+    return vec
+
+def g(x,ai,di):
+    j = np.where(ai==x)
+    j = j[0]
+   
+    copy_ai = np.copy(ai)
+    copy_ai= np.delete(ai,j)
+    copy_di = np.copy(di)
+    copy_di = np.delete(di,j)
+
+    vec = [(np.linalg.norm(x-a) - d)**2 for a,d in zip(copy_ai,copy_di)]
+    vec = np.array(vec)
+    vec = sum(vec)
+    return vec
+
+def f(x,ai,di):
+    m = len(ai)
+    
+    vec = [np.linalg.norm(x - a) - d for a,d in zip(ai,di)]
+
+  
+    vec = np.square(vec)
+    vec = sum(vec)
+
+    vec = vec - m * r(x,ai,di)**2
+   
+    return vec
+
+"""Gaseste x0 optim pentru GSP LS : """
+
+def find_x0(ai,di):
+    INTERVAL_STANGA = -10
+    INTERVAL_DREAPTA = 10
+    m = len(ai)
+    
+    z0 = np.random.randn(*ai[0].shape)
+    norm = np.linalg.norm(z0)
+    z0 = z0/norm 
+
+    n= len(ai[0])
+    x0 = np.array([random.random() * (INTERVAL_DREAPTA - INTERVAL_STANGA) + INTERVAL_STANGA for i in range(n)])
+
+    x_sls  = GPS_SLS(x0,ai,di,30)
+
+
+    cons = {'type':'eq', 'fun': constraint_liminf}
+    minimizer_kwargs = {"args":(ai,di),"constraints":cons}
+    #f_liminf = minimize(fun = function_liminf,x0 = z0,args = (ai,di), constraints = cons)
+    #f_liminf = f_liminf.x
+    # pentru functia nonconvexa gaseste toate minimele locale, apoi alege minimul global
+    f_liminf = basinhopping(func = function_liminf,x0 = z0, minimizer_kwargs = minimizer_kwargs )
+    f_liminf = f_liminf.fun
+    vec = [f(a,ai,di) for a in ai]
+
+    minn = min(vec)
+
+    if f_liminf < minn:
+        x0 = x_sls ### modifica x0 = x_sls 
+        return x0
+    
+    p = vec.index(minn)
+    a_p = ai[p]
+    if r(ai[p],ai,di) > 0 :
+      
+        z1 =  np.multiply(approx_fprime(a_p,g,1e-6,ai,di), (-1)) + np.multiply(approx_fprime(a_p,g,1e-6,ai,di), 2 * m * r(a_p,ai,di) )
+        zero  = np.zeros_like(z1)
+        
+        if (z1==zero).all():
+            v = np.random.randn(*ai[0].shape)
+
+            norm = np.linalg.norm(v)
+            v = v/norm # v = any normalized vector
+        else:
+          
+            v = z1/np.linalg.norm(z1)
+    else:
+        z = np.gradient(g(a_p,ai,di))
+        z = np.array(z)
+
+        zero = np.zeros_like(z)
+        
+        if (z==zero).all():
+            v = np.random.randn(*ai[0].shape)
+            norm = np.linalg.norm(v)
+            v = v/norm # v = any normalized vector
+        else:
+            v= (-1) * z/np.linalg.norm(z)
+    
+    s = 1 
+
+    while f(a_p + s*v , ai,di) >= f(a_p,ai,di):
+        s = s/2
+    
+    x0 = a_p + s*v
+    return x0

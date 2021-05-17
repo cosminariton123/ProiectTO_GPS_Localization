@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
     print('\n')
     nr_figura = 0
-    fixed_point_GPS_LS_random(nr_figura)
+    nr_figura = fixed_point_GPS_LS_random(nr_figura)
     nr_figura = nr_figura + 1
     print('')
     nr_figura = GPS_SLS_random(nr_figura)
@@ -111,5 +111,6 @@ if __name__ == '__main__':
 
 
     fixed_point_GPS_LS_random_x0_ales()
+    nr_figura = nr_figura + 1
     fixed_point_GPS_LS_random_influenta_punctului_de_start()
 

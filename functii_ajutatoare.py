@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import random
 import copy
-import multiprocessing
 
 ######## FUNCTII PT GENERARE DI ##########
 
@@ -283,6 +282,23 @@ def verificare_apartinere_range(matrice, b):
                     extinsa[:,coloana] = np.array(be)
 
                     if np.linalg.matrix_rank(extinsa) == rang :
+
+                        if rang == n:
+                            rez = np.linalg.solve(aux, be)
+                            
+                        
+                        contor = -1
+                        for linie in matrice:
+                            contor = contor + 1
+                            rezultat = 0
+
+                            for x, a in zip(rez, linie):
+                                rezultat += x*a
+                            
+                            if rezultat != b[contor]:
+                                return False
+                
+
                         flag = True
                 
                 if flag == False:
@@ -437,81 +453,3 @@ def metoda_bisectiei(f, B, D, b, g, stanga, dreapta, pasi_acuratete):
         puncte_pentru_convergenta.append((stanga+dreapta)/2)
         return    (stanga+dreapta)/2, puncte_pentru_convergenta
 
-############### FUNCTII PT x0 OPTIM PENTRU GPS_LS FOLOSIND GPS_SLS ##################
-
-"""alg pag 22 +  lema 5.1 pagina 21 
-Find x0 satisfying : f(x0) < min {f(a1), ..f(an), fliminf }
-f_liminf = np.
-"""
-
-def h(x,ai,di,j):
-    m = len(ai) -1
-    copy_ai = ai
-    copy_ai= np.delete(ai,j)
-    vec = [np.linalg.norm(x - a) for a in copy_ai]
-    vec = sum(vec)
-    vec = vec/m
-    return m
-
-def g(x,ai,di,j):
-    m = len(ai) -1
-    copy_ai = ai
-    copy_ai= np.delete(ai,j)
-    copy_di = di
-    copy_di = np.delete(di,j)
-    vec = [np.linalg.norm(x-a) for a in copy_ai]
-    vec = vec - copy_di
-    vec =  vec^2
-    vec = sum(vec)
-    return vec
-
-def f(x,ai,di):
-    m = len(ai)
-    
-    vec = [np.linalg.norm(x - a) for a in ai]
-
-    vec = (vec - di)
-    vec = np.square(vec)
-    vec = sum(vec)
-
-    vec = vec - m * r(x,ai,di)**2
-   
-    return vec
-
-
-"""Gaseste x0 optim pentru GSP LS : """
-
-def find_x0(ai,di):
-    m = len(ai)
-    f_liminf = np.zeros_like(ai[0])  ## gresit!!! nu stiu cum 
-    vec = [f(a,ai,di) for a in ai]
-    minn = min(vec)
-    if np.less(f_liminf,minn).all():
-        x0 = f_liminf  ### gresit !!!!  x0 = x_sls  => nu stiu cine e 
-        return x0
-    
-    p = vec.index(minn)
-    a_p = vec[p]
-    if r(ai[p]) > 0 :
-        z1 =  - np.gradient(g(a_p,ai,di,p)) + 2 * m * r(a_p) * np.gradiend(h(a_p,ai,di,p))
-        if z1 != 0:
-            v = z1/np.linalg.norm(z1)
-        else:
-            v = np.random.randn(*z1.shape)
-            norm = np.linalg.norm(v)
-            v = v/norm # v = any normalized vector
-    else:
-        z = np.gradient(g(a_p,ai,di,p))
-        if z != 0 :
-            v= - z/np.linalg.norm(z)
-        else:
-            v = np.random.randn(*z.shape)
-            norm = np.linalg.norm(v)
-            v = v/norm # v = any normalized vector
-    
-    s = 1 
-    while f(a_p + s*v) >= f(a_p):
-        s = s/2
-    
-    xo = a_p + s*v
-    return x0

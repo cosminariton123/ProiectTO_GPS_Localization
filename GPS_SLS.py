@@ -5,7 +5,7 @@ from functii_ajutatoare import *
 
 
 def GPS_SLS(x,a,d,pasi_acuratete):
-    STANGA, DREAPTA = -100, 100
+    STANGA, DREAPTA = -300, 300
     assert verificare_asumption_matrice(a) == True , "a1...an se afla intr-un spatiu dimensional afin mai mic[de exmplu: lucram in plan(2D) si satelitii sunt coliniari]"
     assert len(a) >= len(x) + 1, "Consecinta directa a faptului ca a1...an nu se afla intr-un spatiu dimensional afin mai mic nu este satisfacuta"
 
@@ -26,7 +26,7 @@ def GPS_SLS(x,a,d,pasi_acuratete):
 
 def GPS_SLS_afisare_convergenta(x, a, d, pasi_acuratete, x_true, nr_figura):
 
-    STANGA, DREAPTA, DISCRETIZARE = -200, 200, 10**3
+    STANGA, DREAPTA, DISCRETIZARE = -100, 100, 10**3
 
     assert verificare_asumption_matrice(a) == True , "a1...an se afla intr-un spatiu dimensional afin mai mic[de exmplu: lucram in plan(2D) si satelitii sunt coliniari]"
     assert len(a) >= len(x) + 1, "Consecinta directa a faptului ca a1...an nu se afla intr-un spatiu dimensional afin mai mic nu este satisfacuta"
@@ -53,7 +53,7 @@ def GPS_SLS_afisare_convergenta(x, a, d, pasi_acuratete, x_true, nr_figura):
     nr_figura +=1
 
     metoda_bisectiei_grafica(fi, B, D, b, g, STANGA, DREAPTA, pasi_acuratete)
-    nr_figura += 1
+    #nr_figura += 1
 
     lambda_star, puncte_pentru_convergenta = metoda_bisectiei(fi, B, D, b, g, STANGA, DREAPTA, pasi_acuratete)
 
@@ -73,6 +73,8 @@ def GPS_SLS_afisare_convergenta(x, a, d, pasi_acuratete, x_true, nr_figura):
 
     plt.plot(range(len(lista_pt_plot)) , lista_pt_plot, linewidth = 3, label = "evolutia diferentei fata de x-ul real", color = 'magenta')
     plt.legend()
+
+    nr_figura +=1
 
 
     return nr_figura
@@ -132,8 +134,7 @@ def GPS_SLS_random(nr_figura):
 
 
     contor = 0
-    while True:
-        contor += 1
+    for contor in range(1, 300):
         print(str(contor)+' Incercari convergenta')
         try:
             nr_figura = GPS_SLS_afisare_convergenta(x, a, d, pasi_acuratete, x_true, nr_figura)
@@ -146,8 +147,7 @@ def GPS_SLS_random(nr_figura):
     plt.figure(nr_figura)
    
     contor = 0
-    while True:
-        contor += 1
+    for contor in range(1, 15):
         print(str(contor)+' Incercari histograma')
         try:
             GPS_SLS_histograma_erorilor(x, a, pasi_acuratete, x_true)
