@@ -53,6 +53,7 @@ def GPS_SLS_afisare_convergenta(x, a, d, pasi_acuratete, x_true, nr_figura):
     nr_figura +=1
 
     metoda_bisectiei_grafica(fi, B, D, b, g, STANGA, DREAPTA, pasi_acuratete)
+    plt.legend()
     #nr_figura += 1
 
     lambda_star, puncte_pentru_convergenta = metoda_bisectiei(fi, B, D, b, g, STANGA, DREAPTA, pasi_acuratete)
